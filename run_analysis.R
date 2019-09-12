@@ -16,7 +16,7 @@ features <- read.csv("./UCI HAR Dataset/features.txt", header = FALSE, sep = "")
 feat_colnames <- as.character(features$V2)
 
 
-##
+## Import and combine test and train datasets, and label the variables
 datasets <- c("test", "train")
 filePatterns <- c("subject", "[Yy]_", "[Xx]_")
 for (i in 1:length(datasets)) {
@@ -40,24 +40,29 @@ for (i in 1:length(datasets)) {
 colnames(mydata) <- c("subject", "activity", feat_colnames)
 
 
-##
+## Filter only the variables on mean and standard deviation for each measurement
 mean_cols <- grep("mean()", colnames(mydata), fixed = T)
 std_cols <- grep("std()", colnames(mydata), fixed = T)
 mydata_subset <- mydata[c(1,2,sort(c(mean_cols, std_cols)))]
 mydata_subset <- merge(activitylabels, mydata_subset)
 
-##-----------------------------------------------------------------------------------
 
-dim(mydata)
-unique(mydata["subject"])
-n_distinct(mydata["subject"])
-unique(mydata["activity"])
-n_distinct(mydata["activity"])
 
 ##-----------------------------------------------------------------------------------
+## Check that you only have 30 subjects, and 6 different activites
+# dim(mydata)
+# unique(mydata["subject"])
+# n_distinct(mydata["subject"])
+# unique(mydata["activity"])
+# n_distinct(mydata["activity"])
 
+
+##-----------------------------------------------------------------------------------
 ## Create tidy dataset
 mydata_tidy <- mydata_subset %>% group_by(subject, activity) %>% select(., 4:69) %>% summarise_all(., mean)
-#sqldf('select subject, activity, avg("tBodyAcc-mean()-X") from mydata_subset group by subject, activity')
+
+
 ##-----------------------------------------------------------------------------------
+## Write .txt file with tidy dataset
+write.table(mydata_tidy, file="mydata.txt", row.names = F)
 
